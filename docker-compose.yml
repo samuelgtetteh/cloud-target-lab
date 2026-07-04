@@ -1,0 +1,12 @@
+services:
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: cloud-target-lab
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,ec2,iam,sts
+      - DEBUG=0
+      - DEFAULT_REGION=us-east-1
+    volumes:
+      - "./volume:/var/lib/localstack"
