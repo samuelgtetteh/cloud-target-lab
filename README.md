@@ -28,3 +28,44 @@ python seed.py
 Then point a scanner (e.g. Control Advisor's `cloud_scan.py`) at `http://localhost:4566` with dummy credentials (`test`/`test`) — the real AWS SDK works against LocalStack unmodified, so the same scanner code works against a real AWS account later with no changes.
 
 **This is a local testing fixture only.** It runs entirely in Docker on your own machine and does not touch any real cloud account.
+
+## Utility Scripts
+
+This project includes several helper scripts to manage the environment:
+
+| Script | Purpose |
+|---|---|
+| `status.py` | View real-time dashboard of environment health and resource counts |
+| `verify.py` | Validate all expected resources exist and are configured correctly |
+| `reset.py` | Delete all resources and optionally restart the container |
+| `cleanup.py` | Selectively remove specific resources (interactive or CLI mode) |
+| `seed.py` | Populate LocalStack with test resources (idempotent - safe to run multiple times) |
+
+### Quick Start Examples
+
+```bash
+# View environment status
+python status.py
+
+# Verify resources are seeded
+python verify.py
+
+# Clean and restart
+python reset.py
+python seed.py
+
+# Interactive cleanup
+python cleanup.py
+```
+
+## Configuration
+
+Edit `.env` to customize:
+- LocalStack endpoint and port
+- AWS region and credentials
+- Docker container name
+
+## Documentation
+
+- **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** — Script usage and common workflows
+- **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** — Solutions to common issues
