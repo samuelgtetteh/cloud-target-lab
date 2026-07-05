@@ -6,7 +6,15 @@ import sys
 import time
 import subprocess
 
-from common import CONTAINER_NAME, ENDPOINT, REGION, client
+from common import (
+    CONTAINER_NAME,
+    ENDPOINT,
+    REGION,
+    client,
+    delete_iam_user,
+    delete_s3_bucket,
+    terminate_ec2_instance,
+)
 
 
 def reset_s3():
@@ -18,13 +26,7 @@ def reset_s3():
             name = bucket["Name"]
             print(f"Deleting S3 bucket: {name}")
             try:
-                # Delete all objects first
-                objects = s3.list_objects_v2(Bucket=name)
-                if "Contents" in objects:
-                    for obj in objects["Contents"]:
-                        s3.delete_object(Bucket=name, Key=obj["Key"])
-                # Delete bucket
-                s3.delete_bucket(Bucket=name)
+                delete_s3_bucket(s3, name)
             except Exception as e:
                 print(f"  Error deleting {name}: {e}")
     except Exception as e:
@@ -43,7 +45,7 @@ def reset_ec2():
                 state = instance["State"]["Name"]
                 if state != "terminated":
                     print(f"Terminating EC2 instance: {instance_id}")
-                    ec2.terminate_instances(InstanceIds=[instance_id])
+                    terminate_ec2_instance(ec2, instance_id)
 
         # Delete security groups (after instances are gone)
         time.sleep(2)
@@ -85,16 +87,7 @@ def reset_iam():
             username = user["UserName"]
             print(f"Deleting IAM user: {username}")
             try:
-                # Delete inline policies
-                policies = iam.list_user_policies(UserName=username)["PolicyNames"]
-                for policy in policies:
-                    iam.delete_user_policy(UserName=username, PolicyName=policy)
-                # Delete access keys
-                keys = iam.list_access_keys(UserName=username)["AccessKeyMetadata"]
-                for key in keys:
-                    iam.delete_access_key(UserName=username, AccessKeyId=key["AccessKeyId"])
-                # Delete user
-                iam.delete_user(UserName=username)
+                delete_iam_user(iam, username)
             except Exception as e:
                 print(f"  Error deleting {username}: {e}")
     except Exception as e:

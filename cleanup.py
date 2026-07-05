@@ -4,22 +4,20 @@ Use this to remove particular resources without a full reset.
 """
 import sys
 
-from common import ENDPOINT, client
+from common import (
+    ENDPOINT,
+    client,
+    delete_iam_user,
+    delete_s3_bucket,
+    terminate_ec2_instance,
+)
 
 
 def cleanup_s3_bucket(bucket_name):
     """Delete a specific S3 bucket and all its contents."""
     s3 = client("s3")
     try:
-        # Delete all objects
-        objects = s3.list_objects_v2(Bucket=bucket_name)
-        if "Contents" in objects:
-            for obj in objects["Contents"]:
-                s3.delete_object(Bucket=bucket_name, Key=obj["Key"])
-                print(f"  Deleted object: {obj['Key']}")
-        
-        # Delete bucket
-        s3.delete_bucket(Bucket=bucket_name)
+        delete_s3_bucket(s3, bucket_name)
         print(f"✓ Deleted bucket: {bucket_name}")
     except Exception as e:
         print(f"✗ Error deleting bucket {bucket_name}: {e}")
@@ -29,7 +27,7 @@ def cleanup_ec2_instance(instance_id):
     """Terminate a specific EC2 instance."""
     ec2 = client("ec2")
     try:
-        ec2.terminate_instances(InstanceIds=[instance_id])
+        terminate_ec2_instance(ec2, instance_id)
         print(f"✓ Terminated instance: {instance_id}")
     except Exception as e:
         print(f"✗ Error terminating instance {instance_id}: {e}")
@@ -39,19 +37,7 @@ def cleanup_iam_user(username):
     """Delete a specific IAM user and all policies."""
     iam = client("iam")
     try:
-        # Delete inline policies
-        policies = iam.list_user_policies(UserName=username)["PolicyNames"]
-        for policy in policies:
-            iam.delete_user_policy(UserName=username, PolicyName=policy)
-            print(f"  Deleted policy: {policy}")
-        
-        # Delete access keys
-        keys = iam.list_access_keys(UserName=username)["AccessKeyMetadata"]
-        for key in keys:
-            iam.delete_access_key(UserName=username, AccessKeyId=key["AccessKeyId"])
-        
-        # Delete user
-        iam.delete_user(UserName=username)
+        delete_iam_user(iam, username)
         print(f"✓ Deleted user: {username}")
     except Exception as e:
         print(f"✗ Error deleting user {username}: {e}")
